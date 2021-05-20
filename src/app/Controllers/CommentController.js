@@ -15,7 +15,7 @@ class CommentController {
     }
 
     /// GET -> /api/v1/comment/:id
-    /// Desc  Get comment form id
+    /// Desc  Get a single comment
     async getComment(req, res) {
         CommentModel.findById(req.params.id)
             .then((comment) => res.status(200).json({ success: true, data: comment }))
