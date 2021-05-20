@@ -61,7 +61,7 @@ class UserController {
     /// GET -> /api/v1/user/:id
     /// Desc  Get a user
     async getUser(req, res) {
-        let user = UserModel.findById(req.params.id).catch((err) => console.log({ err }));
+        let user = await UserModel.findById(req.params.id).catch((err) => console.log({ err }));
 
         if (!user)
             return res.status(404).json({
