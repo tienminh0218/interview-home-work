@@ -60,15 +60,19 @@ class UserController {
 
     /// GET -> /api/v1/user/:id
     /// Desc  Get a user
-    getUser(req, res) {
-        UserModel.findById(req.params.id)
-            .then((users) => {
-                res.status(200).json({
-                    success: true,
-                    data: users,
-                });
-            })
-            .catch((err) => console.log({ err }));
+    async getUser(req, res) {
+        let user = UserModel.findById(req.params.id).catch((err) => console.log({ err }));
+
+        if (!user)
+            return res.status(404).json({
+                success: false,
+                message: "User not found",
+            });
+
+        res.status(200).json({
+            success: true,
+            data: users,
+        });
     }
 
     /// PUT -> /api/v1/user/:id
