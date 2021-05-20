@@ -9,7 +9,7 @@ async function checkUser(req, res, next) {
         req.user = await UserModel.findById(decoded.id).catch((err) => console.log(err));
         next();
     } catch (error) {
-        return console.log({ err });
+        return res.status(403).json({ message: "user not authorized to access this route" });
     }
 }
 
