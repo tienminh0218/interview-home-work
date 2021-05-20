@@ -1,4 +1,5 @@
 const PostModel = require("../Models/post");
+const CommentModel = require("../Models/comment ");
 const Joi = require("joi");
 const validatePost = require("../../utils/validateForm/validatePost");
 const escapeRegex = require("../../utils/fuzzyRegex");
@@ -33,6 +34,45 @@ class PostController {
                 res.status(200).json({ success: true, count: posts.length, data: posts })
             )
             .catch((err) => console.log(err));
+    }
+
+    /// GET /api/v1/post/comments
+    /// Desc  Get all posts and comments
+    getPostsAndComments(req, res) {
+        PostModel.aggregate([
+            { $addFields: { string_id: { $toString: "$_id" } } },
+            {
+                $lookup: {
+                    from: "comments",
+                    localField: "string_id",
+                    foreignField: "post",
+                    as: "comments",
+                },
+            },
+        ])
+            .then((data) => {
+                data.forEach((element) => {
+                    element.sizeComment = element.comments.length;
+                });
+                res.status(200).json({ success: true, data });
+            })
+            .catch((err) => console.log({ err }));
+    }
+
+    /// GET /api/v1/post/comment?post=
+    /// Desc  Search post base on keywords
+    getComment(req, res) {
+        CommentModel.find({ post: req.query.post })
+            .then((comments) =>
+                res.status(200).json({
+                    success: true,
+                    data: comments,
+                    count: comments.length,
+                })
+            )
+            .catch((err) => {
+                console.log({ err });
+            });
     }
 
     /// POST -> /api/v1/post?id=
@@ -73,6 +113,36 @@ class PostController {
             .catch((err) => {
                 console.log({ err });
             });
+    }
+
+    /// DELETE -> /api/v1/post/:id
+    /// Desc  delete a post
+    async deletePost(req, res) {
+        let post = await PostModel.findByIdAndDelete(req.params.id).catch((err) =>
+            console.log(err)
+        );
+
+        if (!post) return res.status(404).json({ success: false, message: "post not found" });
+
+        res.status(204).json({ success: true, data: null });
+    }
+
+    /// PUT -> /api/v1/post/:id
+    /// Desc  update a post
+    async updatePost(req, res) {
+        let oldPost = await PostModel.findById(req.params.id).catch((err) => console.log(err));
+
+        if (!oldPost) return res.status(404).json({ success: false, message: "post not found" });
+
+        PostModel.findByIdAndUpdate(
+            req.params.id,
+            {
+                title: req.body.title || oldPost.title,
+                content: req.body.content || oldPost.content,
+                tags: req.body.tags || oldPost.tags,
+            },
+            { new: true }
+        ).then((post) => res.status(200).json({ success: true, data: post }));
     }
 }
 

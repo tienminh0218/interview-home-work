@@ -52,6 +52,49 @@ class CommentController {
             .then((comment) => res.status(201).json({ success: true, data: comment }))
             .catch((err) => console.log({ err }));
     }
+
+    /// DELETE -> /api/v1/comment/:id
+    /// Desc  delete a comment
+    async deleteComment(req, res) {
+        let comment = await CommentModel.findByIdAndDelete(req.params.id).catch((err) =>
+            console.log(err)
+        );
+
+        if (!comment) return res.status(404).json({ success: false, message: "comment not found" });
+
+        if (comment.owner != req.user._id)
+            return res
+                .status(404)
+                .json({ success: false, message: "comment not found for this user" });
+
+        res.status(204).json({ success: true, data: null });
+    }
+
+    /// PUT -> /api/v1/comment/:id
+    /// Desc  update a comment
+    async updateComment(req, res) {
+        let oldComment = await CommentModel.findById(req.params.id).catch((err) =>
+            console.log(err)
+        );
+
+        if (!oldComment)
+            return res.status(404).json({ success: false, message: "commnet not found" });
+
+        if (oldComment.owner != req.user._id)
+            return res
+                .status(404)
+                .json({ success: false, message: "comment not found for this user" });
+
+        CommentModel.findByIdAndUpdate(
+            req.params.id,
+            {
+                content: req.body.content || oldComment.content,
+            },
+            { new: true }
+        )
+            .then((comment) => res.status(200).json({ success: true, data: comment }))
+            .catch((err) => console.log(err));
+    }
 }
 
 module.exports = new CommentController();

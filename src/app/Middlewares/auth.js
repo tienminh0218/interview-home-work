@@ -6,7 +6,7 @@ async function checkUser(req, res, next) {
     try {
         let secret = process.env.SECRECT;
         let decoded = jwt.verify(token, secret);
-        req.user = await UserModel.findById(decoded.id);
+        req.user = await UserModel.findById(decoded.id).catch((err) => console.log(err));
         next();
     } catch (error) {
         return console.log({ err });
