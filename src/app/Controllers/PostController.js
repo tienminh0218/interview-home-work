@@ -60,7 +60,7 @@ class PostController {
     }
 
     /// GET /api/v1/post/comment?post=
-    /// Desc  Search post base on keywords
+    /// Desc  get comments in post
     getComment(req, res) {
         CommentModel.find({ post: req.query.post })
             .then((comments) =>
